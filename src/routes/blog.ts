@@ -2,11 +2,15 @@ import { Hono } from "hono";
 
 import type { Bindings, Variables } from "../index";
 import { verify } from "hono/jwt";
+import {
+  createBlogInput,
+  updateBlogInput,
+} from "@prathamesh_patil/medium-common";
 
 const blog = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 blog.use("*", async (c, next) => {
-    console.log('middleware')
+  console.log("middleware");
   const token = c.req.header("Authorization")?.split(" ")[1];
   if (!token) {
     c.status(401);
@@ -15,7 +19,7 @@ blog.use("*", async (c, next) => {
   try {
     const data = await verify(token, c.env.JWT_SECRET, "HS256");
     c.set("userId", String(data.id));
-    console.log(c.get('userId'))
+    console.log(c.get("userId"));
     await next();
   } catch (e) {
     c.status(401);
@@ -33,6 +37,10 @@ blog.get("/", async (c) => {
 blog.post("/", async (c) => {
   const prisma = c.get("prisma");
   const body = await c.req.json();
+  const { success } = createBlogInput.safeParse(body);
+  if (!success) {
+    return c.json({ message: "body not correct" }, 411);
+  }
   const blog = await prisma.post.create({
     data: {
       title: body.title,
@@ -47,6 +55,10 @@ blog.post("/", async (c) => {
 blog.put("/", async (c) => {
   const prisma = c.get("prisma");
   const body = await c.req.json();
+  const { success } = updateBlogInput.safeParse(body);
+  if (!success) {
+    return c.json({ message: "body not correct" }, 411);
+  }
   const blog = await prisma.post.update({
     where: {
       id: body.id,
@@ -61,15 +73,15 @@ blog.put("/", async (c) => {
 });
 
 blog.get("/bulk", async (c) => {
-    console.log('00000')
+  console.log("00000");
   const prisma = c.get("prisma");
   try {
-    const limit = c.req.query('limit')
-    const offset = c.req.query('offset');
-    console.log(limit, offset)
+    const limit = c.req.query("limit");
+    const offset = c.req.query("offset");
+    console.log(limit, offset);
     const blogs = await prisma.post.findMany({
-        skip: Number(offset) || 0,
-        take: Number(limit) || 100,
+      skip: Number(offset) || 0,
+      take: Number(limit) || 100,
     });
     c.status(200);
     return c.json({ success: true, length: blogs.length, blogs: blogs });
@@ -96,7 +108,5 @@ blog.get("/:id", async (c) => {
     c.json({ error: "internal server error" });
   }
 });
-
-
 
 export default blog;

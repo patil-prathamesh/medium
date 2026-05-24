@@ -29,6 +29,7 @@ user.post("/signup", async (c) => {
   const prisma = c.get("prisma");
   const body = await c.req.json();
   const {success} = signupInput.safeParse(body)
+  console.log(success)
   if(!success) {
     return c.json({"message": "body not correct"}, 411)
   }
@@ -55,8 +56,11 @@ user.post("/signup", async (c) => {
 user.post("/signin", async (c) => {
   const prisma = c.get("prisma");
   const body = await c.req.json();
-//   const hashedPassword = await hashPassword(body.password);
-//   console.log(hashedPassword);
+
+  const {success} = signinInput.safeParse(body);
+  if(!success) {
+    return c.json({"message": "body not correct"}, 411)
+  }
 
   const user = await prisma.user.findUnique({
     where: {
