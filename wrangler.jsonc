@@ -8,7 +8,6 @@
   // ],
   // "vars": {
   //   "MY_VAR": "my-variable"
-  // "DATABASE_URL":"postgresql://neondb_owner:npg_TorU7A1YCOsZ@ep-royal-queen-ap13a8gy-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
   // },
   // "kv_namespaces": [
   //   {
