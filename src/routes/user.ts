@@ -4,6 +4,9 @@ import { decode, sign, verify } from "hono/jwt";
 import { hashPassword, verifyPassword } from "../utils/hash";
 
 import type { Bindings, Variables } from "../index";
+import z from "zod";
+
+import { signupInput, signinInput } from "@prathamesh_patil/medium-common";
 
 const user = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -25,6 +28,10 @@ user.get("/", async (c) => {
 user.post("/signup", async (c) => {
   const prisma = c.get("prisma");
   const body = await c.req.json();
+  const {success} = signupInput.safeParse(body)
+  if(!success) {
+    return c.json({"message": "body not correct"}, 411)
+  }
   try {
     const user = await prisma.user.create({
       data: {
